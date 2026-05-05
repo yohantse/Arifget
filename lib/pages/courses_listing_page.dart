@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/constants/colors.dart';
+import '../core/services/api_service.dart';
+import '../core/models/course.dart';
 
 class CoursesListingPage extends StatefulWidget {
   final String? initialSearch;
@@ -12,6 +14,7 @@ class CoursesListingPage extends StatefulWidget {
 
 class _CoursesListingPageState extends State<CoursesListingPage> {
   final TextEditingController _searchController = TextEditingController();
+  late Future<List<Course>> _coursesFuture;
   
   @override
   void initState() {
@@ -19,6 +22,13 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
     if (widget.initialSearch != null) {
       _searchController.text = widget.initialSearch ?? '';
     }
+    _coursesFuture = ApiService.getCourses();
+  }
+
+  void _refreshCourses() {
+    setState(() {
+      _coursesFuture = ApiService.getCourses();
+    });
   }
 
   @override
@@ -57,7 +67,7 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _refreshCourses,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -84,11 +94,35 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
           
           // Courses List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return _buildHorizontalCourseCard(index);
+            child: FutureBuilder<List<Course>>(
+              future: _coursesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error: ${snapshot.error}'),
+                        TextButton(onPressed: _refreshCourses, child: const Text('Retry')),
+                      ],
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No courses found'));
+                }
+
+                final courses = snapshot.data!;
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: courses.length,
+                  itemBuilder: (context, index) {
+                    return _buildHorizontalCourseCard(courses[index]);
+                  },
+                );
               },
             ),
           ),
@@ -110,7 +144,7 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
     );
   }
 
-  Widget _buildHorizontalCourseCard(int index) {
+  Widget _buildHorizontalCourseCard(Course course) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -128,10 +162,13 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                image: course.previewImageUrl != null
+                    ? DecorationImage(image: NetworkImage(course.previewImageUrl!), fit: BoxFit.cover)
+                    : null,
               ),
-              child: const Center(
-                child: Icon(Icons.play_circle_fill, color: AppColors.primary, size: 40),
-              ),
+              child: course.previewImageUrl == null
+                  ? const Center(child: Icon(Icons.play_circle_fill, color: AppColors.primary, size: 40))
+                  : null,
             ),
             // Details
             Expanded(
@@ -141,32 +178,43 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      index % 2 == 0 ? 'Full Stack Web Development with React' : 'Mastering Digital Marketing 2024',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      course.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'ETB ${index % 2 == 0 ? "1,200" : "850"}',
-                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                      course.instructorName ?? 'Instructor Name',
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 14),
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
                         const SizedBox(width: 4),
-                        const Text('4.5', style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text('Beginner', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        const Text(
+                          '4.8',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        Text(
+                          course.level ?? 'Beginner',
+                          style: const TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'ETB ${course.price.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ],
                 ),

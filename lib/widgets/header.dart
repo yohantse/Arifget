@@ -66,12 +66,6 @@ class Header extends StatelessWidget {
                   : Icons.light_mode_outlined,
             ),
           ),
-          // Profile
-          const CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primary,
-            child: Icon(Icons.person, size: 20, color: Colors.white),
-          ),
         ],
       ),
     );
