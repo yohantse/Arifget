@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'core/theme/app_theme.dart';
-import 'pages/home_page.dart';
 import 'main_wrapper.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../core/constants/colors.dart';
-import '../widgets/course_card.dart';
 
 class CoursesListingPage extends StatefulWidget {
   final String? initialSearch;
