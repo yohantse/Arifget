@@ -1,4 +1,4 @@
-package com.example.arifget
+package com.yohantse.arifget
 
 import io.flutter.embedding.android.FlutterActivity
 
