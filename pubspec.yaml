@@ -55,9 +55,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "logo/arif-get-logo-with-name.webp"
+  image_path: "logo/arif-logo.png"
   adaptive_icon_background: "#059669"
-  adaptive_icon_foreground: "logo/arif-get-logo-with-name.webp"
+  adaptive_icon_foreground: "logo/arif-logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
