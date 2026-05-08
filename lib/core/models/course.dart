@@ -25,7 +25,7 @@ class Course {
       title: json['title'] ?? '',
       subtitle: json['subtitle'],
       description: json['description'],
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      price: json['price'] != null ? (double.tryParse(json['price'].toString()) ?? 0.0) : 0.0,
       previewImageUrl: json['course_preview_image_url'],
       level: json['level'],
       instructorName: json['seller']?['name'],

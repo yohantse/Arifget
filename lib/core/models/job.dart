@@ -28,7 +28,7 @@ class Job {
       id: json['id'].toString(),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      budgetAmount: (json['budget_amount'] as num?)?.toDouble(),
+      budgetAmount: json['budget_amount'] != null ? double.tryParse(json['budget_amount'].toString()) : null,
       budgetType: json['budget_type'],
       experienceLevel: json['experience_level'],
       duration: json['duration'],

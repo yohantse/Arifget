@@ -33,9 +33,9 @@ class Freelancer {
       profilePicUrl: json['profile_pic'],
       title: json['freelancer_profile']?['title'],
       bio: json['freelancer_profile']?['overview'],
-      hourlyRate: (json['freelancer_profile']?['hourly_rate'] as num?)?.toDouble(),
-      rating: (json['freelancer_profile']?['average_rating'] as num?)?.toDouble() ?? 0.0,
-      reviewsCount: json['freelancer_profile']?['reviews_count'] ?? 0,
+      hourlyRate: json['freelancer_profile']?['hourly_rate'] != null ? double.tryParse(json['freelancer_profile']!['hourly_rate'].toString()) : null,
+      rating: json['freelancer_profile']?['average_rating'] != null ? (double.tryParse(json['freelancer_profile']!['average_rating'].toString()) ?? 0.0) : 0.0,
+      reviewsCount: json['freelancer_profile']?['reviews_count'] != null ? (int.tryParse(json['freelancer_profile']!['reviews_count'].toString()) ?? 0) : 0,
       skills: (json['freelancer_profile']?['skills'] as List?)?.map((s) => s.toString()).toList() ?? [],
       experienceLevel: json['freelancer_profile']?['experience_level'],
     );
