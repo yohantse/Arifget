@@ -18,7 +18,7 @@ class Header extends StatelessWidget {
         children: [
           // Logo
           Image.asset(
-            'logo/arif-get-logo-with-name.webp',
+            'logo/arif-logo.png',
             height: 30,
             errorBuilder: (context, error, stackTrace) => const Text(
               'Arifget',

@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               // Logo
               Image.asset(
-                'logo/arif-get-logo-with-name.webp',
+                'logo/arif-logo.png',
                 height: 80,
                 fit: BoxFit.contain,
               ),
