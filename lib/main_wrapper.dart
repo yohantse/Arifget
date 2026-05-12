@@ -5,6 +5,7 @@ import 'pages/jobs_listing_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/my_courses_page.dart';
 import 'pages/my_jobs_page.dart';
+import 'pages/messages_page.dart';
 import 'core/constants/colors.dart';
 import 'core/models/user_role.dart';
 import 'main.dart';
@@ -82,7 +83,7 @@ class _MainWrapperState extends State<MainWrapper> {
     }
   }
 
-  Widget _buildFreelancerNavItem(IconData icon, String label, bool isActive, int index) {
+  Widget _buildFreelancerNavItem(IconData icon, IconData activeIcon, String label, bool isActive, int index) {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       behavior: HitTestBehavior.opaque,
@@ -90,7 +91,7 @@ class _MainWrapperState extends State<MainWrapper> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            icon,
+            isActive ? activeIcon : icon,
             color: isActive ? Colors.white : const Color(0xFF888888),
             size: 26,
             shadows: isActive ? [const Shadow(color: Colors.white, blurRadius: 12)] : null,
@@ -122,11 +123,11 @@ class _MainWrapperState extends State<MainWrapper> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildFreelancerNavItem(Icons.work, 'Jobs', _selectedIndex == 0, 0),
-              _buildFreelancerNavItem(Icons.description_outlined, 'Proposals', _selectedIndex == 1, 1),
-              _buildFreelancerNavItem(Icons.assignment_outlined, 'Contracts', _selectedIndex == 2, 2),
-              _buildFreelancerNavItem(Icons.message_outlined, 'Messages', _selectedIndex == 3, 3),
-              _buildFreelancerNavItem(Icons.notifications_none, 'Alerts', _selectedIndex == 4, 4),
+              _buildFreelancerNavItem(Icons.work_outline, Icons.work, 'Jobs', _selectedIndex == 0, 0),
+              _buildFreelancerNavItem(Icons.description_outlined, Icons.description, 'Proposals', _selectedIndex == 1, 1),
+              _buildFreelancerNavItem(Icons.assignment_outlined, Icons.assignment, 'Contracts', _selectedIndex == 2, 2),
+              _buildFreelancerNavItem(Icons.message_outlined, Icons.message, 'Messages', _selectedIndex == 3, 3),
+              _buildFreelancerNavItem(Icons.notifications_none, Icons.notifications, 'Alerts', _selectedIndex == 4, 4),
             ],
           ),
           // Android navigation area
@@ -161,7 +162,7 @@ class _MainWrapperState extends State<MainWrapper> {
             const JobsListingPage(),
             const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Proposals', style: TextStyle(color: Colors.white)))),
             const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Contracts', style: TextStyle(color: Colors.white)))),
-            const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Messages', style: TextStyle(color: Colors.white)))),
+            const MessagesPage(),
             const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Alerts', style: TextStyle(color: Colors.white)))),
           ]
         : [
