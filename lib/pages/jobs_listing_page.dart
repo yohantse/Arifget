@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../core/services/api_service.dart';
 import '../core/models/job.dart';
+import '../core/constants/colors.dart';
+// ignore: unused_import
+import 'package:intl/intl.dart';
 
 class JobsListingPage extends StatefulWidget {
   const JobsListingPage({super.key});
@@ -17,6 +20,8 @@ class _JobsListingPageState extends State<JobsListingPage> {
   bool _isLoading = true;
   bool _isFetchingMore = false;
   int _activeTabIndex = 0; // 0 = Find Jobs, 1 = Best Matches
+  int _currentPage = 1;
+  bool _hasMore = true;
 
   @override
   void initState() {
@@ -33,12 +38,17 @@ class _JobsListingPageState extends State<JobsListingPage> {
   }
 
   Future<void> _fetchInitialJobs() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _currentPage = 1;
+      _hasMore = true;
+    });
     try {
-      final jobs = await ApiService.getJobs();
+      final jobs = await ApiService.getJobs(page: _currentPage);
       setState(() {
         _jobs = jobs;
         _isLoading = false;
+        if (jobs.length < 10) _hasMore = false; // Assuming limit is 10
       });
     } catch (e) {
       setState(() => _isLoading = false);
@@ -50,20 +60,27 @@ class _JobsListingPageState extends State<JobsListingPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoading && !_isFetchingMore) {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        !_isFetchingMore &&
+        _hasMore) {
       _fetchMoreJobs();
     }
   }
 
   Future<void> _fetchMoreJobs() async {
     setState(() => _isFetchingMore = true);
-    // Mocking pagination delay
-    await Future.delayed(const Duration(seconds: 1));
     try {
-      final moreJobs = await ApiService.getJobs(); 
+      _currentPage++;
+      final moreJobs = await ApiService.getJobs(page: _currentPage); 
       if (mounted) {
         setState(() {
-          _jobs.addAll(moreJobs);
+          if (moreJobs.isEmpty) {
+            _hasMore = false;
+          } else {
+            _jobs.addAll(moreJobs);
+          }
           _isFetchingMore = false;
         });
       }
@@ -78,7 +95,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
       backgroundColor: const Color(0xFFF8F9FB),
       body: SafeArea(
         child: RefreshIndicator(
-          color: const Color(0xFF14A800),
+          color: AppColors.primary,
           backgroundColor: Colors.white,
           onRefresh: _onRefresh,
           child: CustomScrollView(
@@ -104,8 +121,12 @@ class _JobsListingPageState extends State<JobsListingPage> {
                     ),
                     const SizedBox(width: 12),
                     const Text(
-                      'Jobs',
-                      style: TextStyle(color: Color(0xFF111827), fontSize: 22, fontWeight: FontWeight.bold),
+                      'Find Work',
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -146,7 +167,11 @@ class _JobsListingPageState extends State<JobsListingPage> {
                               return _isFetchingMore
                                   ? const Padding(
                                       padding: EdgeInsets.symmetric(vertical: 24),
-                                      child: Center(child: CircularProgressIndicator(color: Color(0xFF14A800))),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
                                     )
                                   : const SizedBox.shrink();
                             }
@@ -226,7 +251,11 @@ class _SearchTabsDelegate extends SliverPersistentHeaderDelegate {
                     shape: BoxShape.circle,
                     border: Border.all(color: const Color(0xFF14A800)),
                   ),
-                  child: const Icon(Icons.tune, color: Color(0xFF14A800), size: 20),
+                  child: const Icon(
+                    Icons.tune,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -261,7 +290,7 @@ class _SearchTabsDelegate extends SliverPersistentHeaderDelegate {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isActive ? const Color(0xFF14A800) : Colors.transparent,
+              color: isActive ? AppColors.primary : Colors.transparent,
               width: 2,
             ),
           ),
@@ -295,14 +324,25 @@ class _JobCard extends StatelessWidget {
 
   const _JobCard({required this.job});
 
+  String _getTimeAgo(DateTime? dateTime) {
+    if (dateTime == null) return 'Recent';
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'Just now';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Mocked data for UI richness
-    final List<String> mockSkills = ['Figma', 'UI Design', 'Adobe Premiere Pro', 'Motion Graphics'];
+    final timeAgo = _getTimeAgo(job.createdAt);
+    // Mocking proposals based on ID for visual variety
+    final proposals = (job.id.hashCode % 15) + 5;
+    final skills = ['Ethiopia', 'Freelance', 'Remote']; // Generic for now
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -318,162 +358,124 @@ class _JobCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: Time & Proposals + Actions
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  'Posted 1 hour ago • Proposals: 10 to 15',
-                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500),
+              Text(
+                'Posted $timeAgo • Proposals: $proposals to ${proposals + 5}',
+                style: const TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: const Icon(Icons.thumb_down_outlined, color: Color(0xFF6B7280), size: 18),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: const Icon(Icons.favorite_border, color: Color(0xFF6B7280), size: 18),
-                  ),
-                ],
+              const Icon(
+                Icons.favorite_border,
+                color: AppColors.primary,
+                size: 22,
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          
-          // Job Title
+          const SizedBox(height: 16),
           Text(
             job.title,
             style: const TextStyle(
               color: Color(0xFF111827),
               fontSize: 20,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.bold,
               height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 10),
-          
-          // Info Row
-          Text(
-            '${job.budgetAmount != null && job.budgetAmount! > 0 ? 'Fixed-price' : 'Hourly'} • ${job.experienceLevel ?? 'Intermediate'} • Budget: \$${job.budgetAmount?.toStringAsFixed(0) ?? '100'}',
-            style: const TextStyle(color: Color(0xFF4B5563), fontSize: 14, fontWeight: FontWeight.w500),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(
+                '${job.budgetType ?? 'Fixed-price'} - ${job.experienceLevel ?? 'Intermediate'} - Est. Budget: ETB ${job.budgetAmount?.toStringAsFixed(0) ?? 'Negotiable'}',
+                style: const TextStyle(
+                  color: Color(0xFF4B5563),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          
-          // Description Preview
-          RichText(
+          Text(
+            job.description,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 15,
+              height: 1.5,
+            ),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              style: const TextStyle(color: Color(0xFF111827), fontSize: 14, height: 1.5),
-              children: [
-                TextSpan(text: job.description),
-                const TextSpan(
-                  text: ' ...More',
-                  style: TextStyle(color: Color(0xFF14A800), fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 20),
-          
-          // Skills Chips
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: mockSkills.map((skill) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            children: skills
+                .map(
+                  (skill) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 skill,
-                style: const TextStyle(color: Color(0xFF4B5563), fontSize: 12, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Color(0xFF4B5563),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
               ),
             )).toList(),
           ),
           const SizedBox(height: 24),
-          
-          // Client Info Section
           Row(
             children: [
               const Icon(Icons.verified, color: Colors.blue, size: 16),
               const SizedBox(width: 4),
-              const Text('Payment verified', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-              const SizedBox(width: 12),
-              Row(
-                children: const [
-                  Icon(Icons.star, color: Color(0xFF14A800), size: 14),
-                  Icon(Icons.star, color: Color(0xFF14A800), size: 14),
-                  Icon(Icons.star, color: Color(0xFF14A800), size: 14),
-                  Icon(Icons.star, color: Color(0xFF14A800), size: 14),
-                  Icon(Icons.star_half, color: Color(0xFF14A800), size: 14),
-                  SizedBox(width: 4),
-                  Text('4.8', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-                ],
+              const Text(
+                'Payment verified',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(width: 12),
-              const Text('\$10K+ spent', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: const [
-              Icon(Icons.location_on_outlined, color: Color(0xFF6B7280), size: 16),
-              SizedBox(width: 4),
-              Text('United States', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-              SizedBox(width: 16),
-              Text('80% hire rate', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-              SizedBox(width: 16),
-              Text('25 jobs posted', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
+              const SizedBox(width: 16),
+              const Icon(
+                Icons.location_on_outlined,
+                color: Color(0xFF6B7280),
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                job.location ?? 'Ethiopia',
+                style: const TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
-          
-          // Bottom Actions
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF14A800),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Text('Apply Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: const Icon(Icons.favorite_border, color: Color(0xFF14A800), size: 24),
-              ),
-            ],
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to details
+              },
+              child: const Text('View Details'),
+            ),
           ),
         ],
       ),

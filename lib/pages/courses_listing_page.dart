@@ -34,61 +34,66 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
-        title: const Text('All Courses'),
+        title: const Text('Browse Courses', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            onPressed: () {
-              _showFilterDrawer(context);
-            },
-            icon: const Icon(Icons.filter_list),
+            onPressed: () => _showFilterDrawer(context),
+            icon: const Icon(Icons.tune_rounded, color: Color(0xFF111827)),
           ),
         ],
       ),
       body: Column(
         children: [
           // Search Header
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'What are you looking for?',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        hintText: 'What do you want to learn?',
+                        hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF6B7280)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      onSubmitted: (_) => _refreshCourses(),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _refreshCourses,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
-                  child: const Text('Search'),
                 ),
               ],
             ),
           ),
           
-          // Filters Summary (Horizontal Scroll)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _buildFilterChip('Technology'),
-                _buildFilterChip('Marketing'),
-                _buildFilterChip('Business'),
-                _buildFilterChip('Free'),
-                _buildFilterChip('Premium'),
-              ],
+          // Categories Summary
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _buildFilterChip('All Topics', true),
+                  _buildFilterChip('Technology', false),
+                  _buildFilterChip('Marketing', false),
+                  _buildFilterChip('Business', false),
+                  _buildFilterChip('Design', false),
+                ],
+              ),
             ),
           ),
           
@@ -98,7 +103,7 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
               future: _coursesFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
                 } else if (snapshot.hasError) {
                   return Center(
                     child: Column(
@@ -120,142 +125,126 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: courses.length,
                   itemBuilder: (context, index) {
-                    return _buildHorizontalCourseCard(courses[index]);
+                    return _buildCourseCard(courses[index]);
                   },
                 );
               },
             ),
           ),
-          
-          // Pagination Placeholder
-          _buildPagination(),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label) {
+  Widget _buildFilterChip(String label, bool isSelected) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      child: FilterChip(
+      child: ChoiceChip(
         label: Text(label),
+        selected: isSelected,
         onSelected: (val) {},
-      ),
-    );
-  }
-
-  Widget _buildHorizontalCourseCard(Course course) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          // Navigate to details
-        },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                image: course.previewImageUrl != null
-                    ? DecorationImage(image: NetworkImage(course.previewImageUrl!), fit: BoxFit.cover)
-                    : null,
-              ),
-              child: course.previewImageUrl == null
-                  ? const Center(child: Icon(Icons.play_circle_fill, color: AppColors.primary, size: 40))
-                  : null,
-            ),
-            // Details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      course.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      course.instructorName ?? 'Instructor Name',
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '4.8',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                        const Spacer(),
-                        Text(
-                          course.level ?? 'Beginner',
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'ETB ${course.price.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        selectedColor: AppColors.primary,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : const Color(0xFF4B5563),
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          fontSize: 13,
+        ),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: isSelected ? AppColors.primary : const Color(0xFFE5E7EB)),
         ),
       ),
     );
   }
 
-  Widget _buildPagination() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.arrow_back_ios, size: 16)),
-          _buildPageNumber(1, isActive: true),
-          _buildPageNumber(2),
-          _buildPageNumber(3),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.arrow_forward_ios, size: 16)),
+  Widget _buildCourseCard(Course course) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPageNumber(int num, {bool isActive = false}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(4),
-        border: isActive ? null : Border.all(color: Colors.grey[300] ?? Colors.grey),
-      ),
-      child: Text(
-        '$num',
-        style: TextStyle(
-          color: isActive ? Colors.white : Colors.black,
-          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: course.previewImageUrl != null
+                        ? Image.network(course.previewImageUrl!, fit: BoxFit.cover)
+                        : Container(color: AppColors.primary.withOpacity(0.1)),
+                  ),
+                  if (course.previewImageUrl == null)
+                    const Positioned.fill(
+                      child: Center(child: Icon(Icons.play_circle_fill, color: AppColors.primary, size: 56)),
+                    ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: const Icon(Icons.favorite_border, size: 20, color: Color(0xFF6B7280)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Details
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    course.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF111827), height: 1.3),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline, size: 14, color: Color(0xFF6B7280)),
+                      const SizedBox(width: 4),
+                      Text(course.instructorName ?? 'Instructor', style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Color(0xFFFBBF24), size: 20),
+                      const SizedBox(width: 4),
+                      const Text('4.8', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(width: 4),
+                      const Text('(1.2k)', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12)),
+                      const Spacer(),
+                      Text(
+                        'ETB ${course.price.toStringAsFixed(0)}',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -265,6 +254,8 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -275,27 +266,19 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Filters', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                  const Text('Filter Courses', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
                 ],
               ),
-              const Divider(),
+              const SizedBox(height: 16),
               Expanded(
                 child: ListView(
                   children: [
-                    _buildFilterSection('Categories', ['Technology', 'Business', 'Marketing', 'Language']),
-                    _buildFilterSection('Course Type', ['Video', 'PDF/Ebook']),
-                    _buildFilterSection('License', ['Free', 'Premium']),
+                    _buildFilterSection('Category', ['Development', 'Business', 'Design', 'Marketing']),
                     const SizedBox(height: 16),
-                    const Text('Price Range (ETB)', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(child: _buildPriceInput('Min')),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildPriceInput('Max')),
-                      ],
-                    ),
+                    _buildFilterSection('Level', ['Beginner', 'Intermediate', 'Advanced']),
+                    const SizedBox(height: 16),
+                    _buildFilterSection('Price', ['Free', 'Paid']),
                   ],
                 ),
               ),
@@ -304,6 +287,7 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: const Text('Apply Filters'),
                 ),
               ),
@@ -318,30 +302,22 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111827))),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((opt) => FilterChip(
+            label: Text(opt),
+            onSelected: (val) {},
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+          )).toList(),
         ),
-        ...options.map((opt) => CheckboxListTile(
-              title: Text(opt),
-              value: false,
-              onChanged: (val) {},
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            )),
       ],
-    );
-  }
-
-  Widget _buildPriceInput(String label) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        isDense: true,
-      ),
-      keyboardType: TextInputType.number,
     );
   }
 }

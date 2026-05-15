@@ -83,70 +83,102 @@ class _MainWrapperState extends State<MainWrapper> {
     }
   }
 
-  Widget _buildFreelancerNavItem(IconData icon, IconData activeIcon, String label, bool isActive, int index) {
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isActive ? activeIcon : icon,
-            color: isActive ? Colors.white : const Color(0xFF888888),
-            size: 26,
-            shadows: isActive ? [const Shadow(color: Colors.white, blurRadius: 12)] : null,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : const Color(0xFF888888),
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+  Widget _buildFreelancerNavItem(
+    IconData icon,
+    IconData activeIcon,
+    String label,
+    bool isActive,
+    int index,
+    bool isDark,
+  ) {
+    final color = isActive
+        ? AppColors.primary
+        : (isDark ? Colors.grey[400] : Colors.grey[600]);
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onItemTapped(index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(isActive ? activeIcon : icon,
+              color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _getFreelancerBottomNav() {
+  Widget _getFreelancerBottomNav(bool isDark) {
     return Container(
-      padding: const EdgeInsets.only(top: 12, bottom: 8),
-      decoration: const BoxDecoration(
-        color: Color(0xFF000000),
-        border: Border(top: BorderSide(color: Color(0xFF1A1A1A))),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildFreelancerNavItem(Icons.work_outline, Icons.work, 'Jobs', _selectedIndex == 0, 0),
-              _buildFreelancerNavItem(Icons.description_outlined, Icons.description, 'Proposals', _selectedIndex == 1, 1),
-              _buildFreelancerNavItem(Icons.assignment_outlined, Icons.assignment, 'Contracts', _selectedIndex == 2, 2),
-              _buildFreelancerNavItem(Icons.message_outlined, Icons.message, 'Messages', _selectedIndex == 3, 3),
-              _buildFreelancerNavItem(Icons.notifications_none, Icons.notifications, 'Alerts', _selectedIndex == 4, 4),
-            ],
-          ),
-          // Android navigation area
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 24,
-            color: const Color(0xFF000000),
-            child: Center(
-              child: Container(
-                width: 130,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        border: Border(
+          top: BorderSide(color: isDark ? Colors.white10 : Colors.black12),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildFreelancerNavItem(
+              Icons.search,
+              Icons.search,
+              'Find Work',
+              _selectedIndex == 0,
+              0,
+              isDark,
+            ),
+            _buildFreelancerNavItem(
+              Icons.description_outlined,
+              Icons.description,
+              'Proposals',
+              _selectedIndex == 1,
+              1,
+              isDark,
+            ),
+            _buildFreelancerNavItem(
+              Icons.assignment_outlined,
+              Icons.assignment,
+              'Contracts',
+              _selectedIndex == 2,
+              2,
+              isDark,
+            ),
+            _buildFreelancerNavItem(
+              Icons.message_outlined,
+              Icons.message,
+              'Messages',
+              _selectedIndex == 3,
+              3,
+              isDark,
+            ),
+            _buildFreelancerNavItem(
+              Icons.notifications_none,
+              Icons.notifications,
+              'Alerts',
+              _selectedIndex == 4,
+              4,
+              isDark,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -160,10 +192,10 @@ class _MainWrapperState extends State<MainWrapper> {
     final List<Widget> screens = currentRole == UserRole.freelancer
         ? [
             const JobsListingPage(),
-            const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Proposals', style: TextStyle(color: Colors.white)))),
-            const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Contracts', style: TextStyle(color: Colors.white)))),
+            _buildEmptyState('Proposals', Icons.description_outlined),
+            _buildEmptyState('Contracts', Icons.assignment_outlined),
             const MessagesPage(),
-            const Scaffold(backgroundColor: Color(0xFF0F0F0F), body: Center(child: Text('Alerts', style: TextStyle(color: Colors.white)))),
+            _buildEmptyState('Alerts', Icons.notifications_none),
           ]
         : [
             const HomePage(),
@@ -177,7 +209,7 @@ class _MainWrapperState extends State<MainWrapper> {
         children: screens,
       ),
       bottomNavigationBar: currentRole == UserRole.freelancer
-          ? _getFreelancerBottomNav()
+          ? _getFreelancerBottomNav(isDark)
           : Container(
               decoration: BoxDecoration(
                 boxShadow: [
@@ -216,6 +248,33 @@ class _MainWrapperState extends State<MainWrapper> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildEmptyState(String title, IconData icon) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Nothing to show here yet.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

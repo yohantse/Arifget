@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/constants/colors.dart';
 import '../widgets/header.dart';
 import '../widgets/course_card.dart';
 import '../widgets/job_card.dart';
@@ -95,13 +96,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHero(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF059669), Color(0xFF10B981)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,7 +115,14 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => _navigateToCourses(context),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF059669), padding: const EdgeInsets.symmetric(vertical: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                   child: const Text('Find Courses'),
                 ),
               ),
@@ -128,7 +130,14 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => _navigateToJobs(context),
-                  style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white), padding: const EdgeInsets.symmetric(vertical: 16)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white, width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                   child: const Text('Find Jobs'),
                 ),
               ),

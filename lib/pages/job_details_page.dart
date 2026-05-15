@@ -18,9 +18,12 @@ class JobDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Job Details'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.share_outlined)),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.share_outlined, color: Color(0xFF111827))),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, color: AppColors.primary)),
         ],
       ),
       body: SingleChildScrollView(
@@ -145,38 +148,38 @@ class JobDetailsPage extends StatelessWidget {
   Widget _buildClientInfo() {
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200] ?? Colors.grey),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('About the Client', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+          const Text('About the Client', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 16),
           const Row(
             children: [
-              Icon(Icons.verified, color: Colors.blue, size: 16),
+              Icon(Icons.verified, color: Colors.blue, size: 18),
               SizedBox(width: 8),
               Text('Payment Verified', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           const Row(
             children: [
-              Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+              Icon(Icons.location_on_outlined, size: 18, color: Color(0xFF6B7280)),
               SizedBox(width: 8),
-              Text('Addis Ababa, Ethiopia', style: TextStyle(color: Colors.grey)),
+              Text('Addis Ababa, Ethiopia', style: TextStyle(color: Color(0xFF4B5563))),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           const Row(
             children: [
-              Icon(Icons.work_outline, size: 16, color: Colors.grey),
+              Icon(Icons.work_outline, size: 18, color: Color(0xFF6B7280)),
               SizedBox(width: 8),
-              Text('12 jobs posted', style: TextStyle(color: Colors.grey)),
+              Text('12 jobs posted', style: TextStyle(color: Color(0xFF4B5563))),
             ],
           ),
         ],
@@ -214,44 +217,57 @@ class JobDetailsPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 24),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Submit Proposal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            const TextField(
+            const Text('Submit Proposal', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Set your bid and cover letter for this project.', style: TextStyle(color: Color(0xFF6B7280))),
+            const SizedBox(height: 24),
+            TextField(
               decoration: InputDecoration(
                 labelText: 'Your Bid (ETB)',
-                border: OutlineInputBorder(),
+                labelStyle: const TextStyle(color: Color(0xFF6B7280)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
               ),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
-            const TextField(
-              maxLines: 4,
+            const SizedBox(height: 20),
+            TextField(
+              maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Cover Letter',
                 hintText: 'Describe why you are the best fit for this job...',
-                border: OutlineInputBorder(),
+                labelStyle: const TextStyle(color: Color(0xFF6B7280)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Proposal submitted successfully!')),
+                    const SnackBar(
+                      content: Text('Proposal submitted successfully!'),
+                      backgroundColor: AppColors.primary,
+                    ),
                   );
                 },
                 child: const Text('Send Proposal'),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
           ],
         ),
       ),

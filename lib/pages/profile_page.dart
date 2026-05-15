@@ -15,116 +15,106 @@ class ProfilePage extends StatelessWidget {
       valueListenable: AuthService.userNotifier,
       builder: (context, user, child) {
         return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FB),
           appBar: AppBar(
-            title: const Text('Profile'),
+            title: const Text('Account', style: TextStyle(fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            scrolledUnderElevation: 0,
             actions: [
               IconButton(
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const SettingsPage()),
                 ),
-                icon: const Icon(Icons.settings_outlined),
+                icon: const Icon(Icons.settings_outlined, color: Color(0xFF111827)),
               ),
             ],
           ),
           body: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 24),
-                // Avatar & Name
-                _buildAvatar(user),
-                const SizedBox(height: 16),
-                Text(
-                  user?.name ?? 'Loading...',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                if (user?.email != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      user!.email,
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                  ),
-                ValueListenableBuilder<UserRole>(
-                  valueListenable: roleNotifier,
-                  builder: (context, role, child) {
-                    return Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
+                // Profile Header Card
+                Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                  child: Column(
+                    children: [
+                      _buildAvatar(user),
+                      const SizedBox(height: 16),
+                      Text(
+                        user?.name ?? 'Loading...',
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
                       ),
-                      child: Text(
-                        role.label,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      if (user?.email != null)
+                        Text(
+                          user!.email,
+                          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                         ),
-                      ),
-                    );
-                  },
+                      const SizedBox(height: 24),
+                      _buildStatsRow(user),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 32),
-
-                // Switch Role Section — only shows roles the user actually has
+                
+                const SizedBox(height: 12),
+                
+                // Role Switcher Card
                 if (user != null && user.appRoles.length > 1) ...[
-                  _buildSectionHeader('Switch Role'),
-                  _buildRoleSwitcher(user),
-                  const SizedBox(height: 16),
+                  _buildRoleSwitcherCard(user),
+                  const SizedBox(height: 12),
                 ],
 
-                // Stats Row
-                _buildStatsRow(user),
-                const SizedBox(height: 32),
+                // Menu Sections
+                _buildMenuSection(
+                  context,
+                  'Freelance & Work',
+                  [
+                    _MenuData(Icons.description_outlined, 'My Proposals', 'Track your job applications'),
+                    _MenuData(Icons.assignment_outlined, 'My Contracts', 'Active and past work'),
+                    _MenuData(Icons.account_balance_wallet_outlined, 'Earnings', 'Withdrawals and transactions'),
+                  ],
+                ),
+                
+                _buildMenuSection(
+                  context,
+                  'Learning',
+                  [
+                    _MenuData(Icons.play_circle_outline, 'My Learning', 'Courses you are enrolled in'),
+                    _MenuData(Icons.favorite_outline, 'Wishlist', 'Saved courses for later'),
+                  ],
+                ),
 
-                // Menu Items
-                _buildSectionHeader('Account'),
-                _buildMenuItem(
+                _buildMenuSection(
                   context,
-                  Icons.book_outlined,
-                  'My Learning',
-                  subtitle: 'View your enrolled courses',
+                  'Account Settings',
+                  [
+                    _MenuData(Icons.person_outline, 'Personal Info', 'Update your profile details'),
+                    _MenuData(Icons.security_outlined, 'Security', 'Password and authentication'),
+                    _MenuData(Icons.notifications_none, 'Notifications', 'Manage alerts'),
+                  ],
                 ),
-                _buildMenuItem(
-                  context,
-                  Icons.favorite_outline,
-                  'Wishlist',
-                  subtitle: 'Saved courses & services',
-                ),
-                _buildMenuItem(
-                  context,
-                  Icons.payment_outlined,
-                  'Payment Methods',
-                  subtitle: 'Manage your payment options',
-                ),
-                const SizedBox(height: 8),
-                _buildSectionHeader('Support'),
-                _buildMenuItem(
-                  context,
-                  Icons.help_outline,
-                  'Help & Support',
-                ),
-                _buildMenuItem(
-                  context,
-                  Icons.settings_outlined,
-                  'Settings',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmLogout(context),
+                      icon: const Icon(Icons.logout, size: 18),
+                      label: const Text('Sign Out'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                _buildMenuItem(
-                  context,
-                  Icons.logout,
-                  'Log Out',
-                  isDestructive: true,
-                  onTap: () => _confirmLogout(context),
-                ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 48),
               ],
             ),
           ),
@@ -134,122 +124,124 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildAvatar(User? user) {
-    if (user?.profilePic != null) {
-      return CircleAvatar(
-        radius: 60,
-        backgroundImage: NetworkImage(user!.profilePic!),
-      );
-    }
-    // Initials avatar
-    return CircleAvatar(
-      radius: 60,
-      backgroundColor: AppColors.primary,
-      child: Text(
-        user?.initials ?? 'U',
-        style: const TextStyle(
-          fontSize: 36,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primary, width: 3),
+          ),
+          padding: const EdgeInsets.all(4),
+          child: user?.profilePic != null
+              ? CircleAvatar(
+                  radius: 54,
+                  backgroundImage: NetworkImage(user!.profilePic!),
+                )
+              : CircleAvatar(
+                  radius: 54,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    user?.initials ?? 'U',
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
         ),
-      ),
+        Positioned(
+          right: 4,
+          bottom: 4,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+            child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildStatsRow(User? user) {
-    final roles = user?.appRoles ?? [];
-    final stats = <Map<String, String>>[];
-    if (roles.contains(UserRole.courseBuyer) || roles.contains(UserRole.courseSeller)) {
-      stats.add({'label': 'Courses', 'value': '—'});
-    }
-    if (roles.contains(UserRole.freelancer)) {
-      stats.add({'label': 'Proposals', 'value': '—'});
-    }
-    stats.add({'label': 'Rating', 'value': '—'});
-
-    if (stats.isEmpty) return const SizedBox.shrink();
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: stats
-          .map((s) => _buildStat(s['label']!, s['value']!))
-          .toList(),
+      children: [
+        _buildStat('4.9', 'Rating'),
+        _buildVerticalDivider(),
+        _buildStat('12', 'Jobs'),
+        _buildVerticalDivider(),
+        _buildStat('ETB 5K', 'Earned'),
+      ],
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-            letterSpacing: 0.8,
-          ),
-        ),
-      ),
+  Widget _buildStat(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12)),
+      ],
     );
   }
 
-  Widget _buildRoleSwitcher(User user) {
+  Widget _buildVerticalDivider() {
+    return Container(height: 24, width: 1, color: const Color(0xFFE5E7EB));
+  }
+
+  Widget _buildRoleSwitcherCard(User user) {
     return ValueListenableBuilder<UserRole>(
       valueListenable: roleNotifier,
       builder: (context, currentRole, child) {
-        return ListTile(
-          leading: const Icon(Icons.swap_horiz, color: AppColors.primary),
-          title: const Text('Current Role'),
-          subtitle: Text(
-            currentRole.label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          trailing: PopupMenuButton<UserRole>(
-            initialValue: currentRole,
-            onSelected: (UserRole role) {
-              roleNotifier.value = role;
-            },
-            itemBuilder: (BuildContext context) =>
-                user.appRoles.map((role) {
-              return PopupMenuItem<UserRole>(
-                value: role,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Switch Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: [
-                    Icon(_getRoleIcon(role), color: Colors.grey, size: 20),
-                    const SizedBox(width: 12),
-                    Text(role.label),
-                    if (currentRole == role) ...[
-                      const Spacer(),
-                      const Icon(Icons.check, color: AppColors.primary, size: 16),
-                    ],
-                  ],
+                  children: user.appRoles.map((role) {
+                    final isActive = currentRole == role;
+                    return GestureDetector(
+                      onTap: () => roleNotifier.value = role,
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isActive ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isActive ? AppColors.primary : const Color(0xFFE5E7EB)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getRoleIcon(role),
+                              size: 18,
+                              color: isActive ? Colors.white : const Color(0xFF4B5563),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              role.label,
+                              style: TextStyle(
+                                color: isActive ? Colors.white : const Color(0xFF4B5563),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Switch',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                ],
-              ),
-            ),
+            ],
           ),
         );
       },
@@ -258,50 +250,53 @@ class ProfilePage extends StatelessWidget {
 
   IconData _getRoleIcon(UserRole role) {
     switch (role) {
-      case UserRole.freelancer:
-        return Icons.work_outline;
-      case UserRole.courseBuyer:
-        return Icons.school_outlined;
-      case UserRole.courseSeller:
-        return Icons.dashboard_outlined;
-      case UserRole.client:
-        return Icons.assignment_outlined;
+      case UserRole.freelancer: return Icons.work_outline;
+      case UserRole.courseBuyer: return Icons.school_outlined;
+      case UserRole.courseSeller: return Icons.dashboard_outlined;
+      case UserRole.client: return Icons.assignment_outlined;
     }
   }
 
-  Widget _buildStat(String label, String value) {
+  Widget _buildMenuSection(BuildContext context, String title, List<_MenuData> items) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 16, 12),
+          child: Text(
+            title.toUpperCase(),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6B7280), letterSpacing: 1),
           ),
         ),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: items.length,
+            separatorBuilder: (context, index) => const Divider(height: 1, indent: 56),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Icon(item.icon, size: 20, color: AppColors.primary),
+                ),
+                title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                trailing: const Icon(Icons.chevron_right, size: 20, color: Color(0xFF9CA3AF)),
+                onTap: () {},
+              );
+            },
+          ),
+        ),
       ],
-    );
-  }
-
-  Widget _buildMenuItem(
-    BuildContext context,
-    IconData icon,
-    String title, {
-    String? subtitle,
-    bool isDestructive = false,
-    VoidCallback? onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : AppColors.primary),
-      title: Text(
-        title,
-        style: TextStyle(color: isDestructive ? Colors.red : null),
-      ),
-      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
-      trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-      onTap: onTap ?? () {},
     );
   }
 
@@ -309,23 +304,28 @@ class ProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out of your account?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await AuthService().logout();
               isLoggedIn.value = false;
             },
-            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+            child: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
+}
+
+class _MenuData {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  _MenuData(this.icon, this.title, this.subtitle);
 }
