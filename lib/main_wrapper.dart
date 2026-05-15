@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+// ignore: unused_import
 import 'pages/courses_listing_page.dart';
 import 'pages/jobs_listing_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/my_courses_page.dart';
+import 'pages/my_learning_page.dart';
 import 'pages/my_jobs_page.dart';
 import 'pages/messages_page.dart';
 import 'core/constants/colors.dart';
 import 'core/models/user_role.dart';
+import 'widgets/side_drawer.dart';
 import 'main.dart';
 
 class MainWrapper extends StatefulWidget {
@@ -19,6 +22,7 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -49,7 +53,7 @@ class _MainWrapperState extends State<MainWrapper> {
       case UserRole.freelancer:
         return const JobsListingPage(); // This is for safety, but we bypass it in screens list
       case UserRole.courseBuyer:
-        return const CoursesListingPage();
+        return const MyLearningPage();
       case UserRole.courseSeller:
         return const MyCoursesPage();
       case UserRole.client:
@@ -204,6 +208,8 @@ class _MainWrapperState extends State<MainWrapper> {
           ];
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const SideDrawer(),
       body: IndexedStack(
         index: _selectedIndex,
         children: screens,

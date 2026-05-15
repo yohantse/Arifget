@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/services/api_service.dart';
 import '../core/models/job.dart';
 import '../core/constants/colors.dart';
+import 'job_details_page.dart';
 // ignore: unused_import
 import 'package:intl/intl.dart';
 
@@ -44,7 +45,10 @@ class _JobsListingPageState extends State<JobsListingPage> {
       _hasMore = true;
     });
     try {
-      final jobs = await ApiService.getJobs(page: _currentPage);
+      final jobs = await ApiService.getJobs(
+        query: _searchController.text,
+        page: _currentPage,
+      );
       setState(() {
         _jobs = jobs;
         _isLoading = false;
@@ -73,7 +77,10 @@ class _JobsListingPageState extends State<JobsListingPage> {
     setState(() => _isFetchingMore = true);
     try {
       _currentPage++;
-      final moreJobs = await ApiService.getJobs(page: _currentPage); 
+      final moreJobs = await ApiService.getJobs(
+        query: _searchController.text,
+        page: _currentPage,
+      );
       if (mounted) {
         setState(() {
           if (moreJobs.isEmpty) {
@@ -114,10 +121,15 @@ class _JobsListingPageState extends State<JobsListingPage> {
                 ),
                 title: Row(
                   children: [
-                    const CircleAvatar(
-                      radius: 16,
-                      backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'), // Mock avatar
-                      backgroundColor: Color(0xFFE5E7EB),
+                    GestureDetector(
+                      onTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                      child: const CircleAvatar(
+                        radius: 16,
+                        backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'), // Mock avatar
+                        backgroundColor: Color(0xFFE5E7EB),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -147,6 +159,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
                   onTabChanged: (index) {
                     setState(() => _activeTabIndex = index);
                   },
+                  onSearch: _fetchInitialJobs,
                 ),
               ),
 
@@ -194,10 +207,13 @@ class _SearchTabsDelegate extends SliverPersistentHeaderDelegate {
   final int activeTabIndex;
   final Function(int) onTabChanged;
 
+  final VoidCallback onSearch;
+
   _SearchTabsDelegate({
     required this.searchController,
     required this.activeTabIndex,
     required this.onTabChanged,
+    required this.onSearch,
   });
 
   @override
@@ -229,6 +245,7 @@ class _SearchTabsDelegate extends SliverPersistentHeaderDelegate {
                           child: TextField(
                             controller: searchController,
                             style: const TextStyle(color: Color(0xFF111827), fontSize: 16),
+                            onSubmitted: (_) => onSearch(),
                             decoration: const InputDecoration(
                               hintText: 'Search for jobs',
                               hintStyle: TextStyle(color: Color(0xFF6B7280), fontSize: 16),
@@ -336,148 +353,154 @@ class _JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeAgo = _getTimeAgo(job.createdAt);
-    // Mocking proposals based on ID for visual variety
     final proposals = (job.id.hashCode % 15) + 5;
-    final skills = ['Ethiopia', 'Freelance', 'Remote']; // Generic for now
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Posted $timeAgo • Proposals: $proposals to ${proposals + 5}',
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Icon(
-                Icons.favorite_border,
-                color: AppColors.primary,
-                size: 22,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            job.title,
-            style: const TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
+    final skills = ['Ethiopia', 'Freelance', 'Remote'];
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => JobDetailsPage(
+              title: job.title,
+              budget: job.budgetAmount ?? 0,
+              description: job.description,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                '${job.budgetType ?? 'Fixed-price'} - ${job.experienceLevel ?? 'Intermediate'} - Est. Budget: ETB ${job.budgetAmount?.toStringAsFixed(0) ?? 'Negotiable'}',
-                style: const TextStyle(
-                  color: Color(0xFF4B5563),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            job.description,
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 15,
-              height: 1.5,
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills
-                .map(
-                  (skill) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(20),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Posted $timeAgo • Proposals: $proposals to ${proposals + 5}',
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Icon(
+                  Icons.favorite_border,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              job.title,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
               ),
-              child: Text(
-                skill,
-                      style: const TextStyle(
-                        color: Color(0xFF4B5563),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text(
+                  '${job.budgetType ?? 'Fixed-price'} - ${job.experienceLevel ?? 'Intermediate'} - Est. Budget: ETB ${job.budgetAmount?.toStringAsFixed(0) ?? 'Negotiable'}',
+                  style: const TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              job.description,
+              style: const TextStyle(
+                color: Color(0xFF374151),
+                fontSize: 15,
+                height: 1.5,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: skills
+                  .map(
+                    (skill) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-              ),
-            )).toList(),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              const Icon(Icons.verified, color: Colors.blue, size: 16),
-              const SizedBox(width: 4),
-              const Text(
-                'Payment verified',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Icon(
-                Icons.location_on_outlined,
-                color: Color(0xFF6B7280),
-                size: 16,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                job.location ?? 'Ethiopia',
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                // Navigate to details
-              },
-              child: const Text('View Details'),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        skill,
+                        style: const TextStyle(
+                          color: Color(0xFF4B5563),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Icon(Icons.verified, color: Colors.blue, size: 16),
+                const SizedBox(width: 4),
+                const Text(
+                  'Payment verified',
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Icon(
+                  Icons.location_on_outlined,
+                  color: Color(0xFF6B7280),
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  job.location ?? 'Ethiopia',
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -16,14 +16,24 @@ class Header extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Menu Button
+          IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: const Icon(Icons.menu, color: Colors.white),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
           // Logo
           Image.asset(
             'logo/arif-logo.png',
-            height: 30,
+            height: 24,
             errorBuilder: (context, error, stackTrace) => const Text(
               'Arifget',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
               ),
@@ -33,20 +43,20 @@ class Header extends StatelessWidget {
           // Search Bar (Expanded)
           Expanded(
             child: Container(
-              height: 40,
+              height: 36,
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: TextField(
                 onSubmitted: onSearchSubmit,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: const InputDecoration(
-                  hintText: 'Search courses...',
-                  hintStyle: TextStyle(color: Colors.white60, fontSize: 14),
-                  prefixIcon: Icon(Icons.search, size: 20, color: Colors.white60),
+                  hintText: 'Search...',
+                  hintStyle: TextStyle(color: Colors.white60, fontSize: 13),
+                  prefixIcon: Icon(Icons.search, size: 18, color: Colors.white60),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
                 ),
               ),
             ),
@@ -60,11 +70,14 @@ class Header extends StatelessWidget {
                   : ThemeMode.light;
             },
             color: Colors.white,
+            iconSize: 20,
             icon: Icon(
               themeNotifier.value == ThemeMode.light
                   ? Icons.dark_mode_outlined
                   : Icons.light_mode_outlined,
             ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/colors.dart';
 import '../core/services/api_service.dart';
 import '../core/models/course.dart';
+import 'course_details_page.dart';
 
 class CoursesListingPage extends StatefulWidget {
   final String? initialSearch;
@@ -22,12 +23,12 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
     if (widget.initialSearch != null) {
       _searchController.text = widget.initialSearch ?? '';
     }
-    _coursesFuture = ApiService.getCourses();
+    _coursesFuture = ApiService.getCourses(query: _searchController.text);
   }
 
   void _refreshCourses() {
     setState(() {
-      _coursesFuture = ApiService.getCourses();
+      _coursesFuture = ApiService.getCourses(query: _searchController.text);
     });
   }
 
@@ -174,7 +175,19 @@ class _CoursesListingPageState extends State<CoursesListingPage> {
         ],
       ),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CourseDetailsPage(
+                title: course.title,
+                instructor: course.instructorName ?? 'Arifget Instructor',
+                price: course.price,
+                rating: 4.8, // Mocked rating
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

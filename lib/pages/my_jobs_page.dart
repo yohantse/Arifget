@@ -11,6 +11,12 @@ class MyJobsPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FB),
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: const Icon(Icons.menu, color: Color(0xFF111827)),
+          ),
           title: const Text('My Jobs', style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Colors.white,
           elevation: 0,
@@ -30,12 +36,7 @@ class MyJobsPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildEmptyTab(
-              icon: Icons.work_outline,
-              title: 'No open jobs',
-              subtitle: 'Post a job to find the best freelancers in Ethiopia.',
-              actionLabel: 'Post a job',
-            ),
+            _buildOpenJobs(),
             _buildEmptyTab(
               icon: Icons.pending_outlined,
               title: 'No active jobs',
@@ -56,6 +57,106 @@ class MyJobsPage extends StatelessWidget {
           label: const Text('Post a Job', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
       ),
+    );
+  }
+
+  Widget _buildOpenJobs() {
+    final dummyJobs = [
+      {
+        'title': 'Flutter Developer for E-commerce App',
+        'proposals': 12,
+        'posted': '2 hours ago',
+        'status': 'Public',
+        'budget': 'ETB 15,000'
+      },
+      {
+        'title': 'UI/UX Designer for Fintech Landing Page',
+        'proposals': 5,
+        'posted': 'Yesterday',
+        'status': 'Invite Only',
+        'budget': 'ETB 8,500'
+      },
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: dummyJobs.length,
+      itemBuilder: (context, index) {
+        final job = dummyJobs[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      job['status'] as String,
+                      style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(job['posted'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                job['title'] as String,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.people_outline, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text('${job['proposals']} proposals', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.payments_outlined, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(job['budget'] as String, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                ],
+              ),
+              const Divider(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      child: const Text('View Proposals'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      child: const Text('Edit Job'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

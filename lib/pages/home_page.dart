@@ -61,7 +61,12 @@ class _HomePageState extends State<HomePage> {
           children: [
             Header(
               onSearchSubmit: (query) {
-                // Implement search navigation
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CoursesListingPage(initialSearch: query),
+                  ),
+                );
               },
             ),
             Expanded(

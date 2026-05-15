@@ -7,11 +7,13 @@ import '../models/freelancer.dart';
 class ApiService {
   static const String baseUrl = 'https://api.dev.arifget.com';
 
-  static Future<List<Course>> getCourses({int page = 1, int limit = 10}) async {
+  static Future<List<Course>> getCourses({String? query, int page = 1, int limit = 10}) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/course?page=$page&limit=$limit'),
-      );
+      String url = '$baseUrl/api/course?page=$page&limit=$limit';
+      if (query != null && query.isNotEmpty) {
+        url += '&search=$query';
+      }
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -25,11 +27,13 @@ class ApiService {
     }
   }
 
-  static Future<List<Job>> getJobs({int page = 1}) async {
+  static Future<List<Job>> getJobs({String? query, int page = 1}) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/jobs?page=$page'),
-      );
+      String url = '$baseUrl/api/jobs?page=$page';
+      if (query != null && query.isNotEmpty) {
+        url += '&search=$query';
+      }
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
